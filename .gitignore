@@ -1,0 +1,57 @@
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+
+# Local configuration
+.env
+
+# Models / vector DB
+models/
+
+# Chroma default directory (nested within models/)
+chroma_db/
+
+
+
+
+
+
+# Virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Vector database / models
+models/
+
+# Local data (PDFs)
+data/raw_documents/
+
+# OS files
+.DS_Store
+
+# Virtual environment
+.venv/
+../.venv/
+
+# Data and documents
+data/
+data/raw_documents/
+
+# Vector database / models
+models/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# OS files
+.DS_Store
+
