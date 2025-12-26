@@ -3,7 +3,7 @@ import streamlit as st
 from src.data_processor import generate_chunks_from_pdfs
 from src.vector_store import VectorStore
 from src.rag_pipeline import RAGPipeline
-
+from src.config import LLM_MODEL_NAME
 
 # -----------------------------
 # Helpers
@@ -45,7 +45,7 @@ if "vector_store" not in st.session_state:
 if "rag" not in st.session_state:
     st.session_state.rag = RAGPipeline(
         st.session_state.vector_store,
-        llm_model="llama3",
+        llm_model=LLM_MODEL_NAME,
         top_k=4,
     )
 
