@@ -13,8 +13,6 @@ from __future__ import annotations
 
 from typing import Dict, Any, List, Tuple
 import re
-
-import ollama
 import traceback
 
 
@@ -56,27 +54,25 @@ class RAGPipeline:
     # ==================================================
     def _build_prompt(self, question: str, context: str) -> str:
         return f"""
-You are an academic assistant specialized in mobility and transport in Skåne.
+You are an academic assistant specialized in mobility and transport in Skåne, evaluating baseline reliability of RAG systems for travel behaviour analysis.
 
-## Instructions
-1. If the QUESTION is generic (examples: "what is today's date?", "what time is it?", weather, math, general knowledge, current events, or unrelated to Skåne transport), answer directly using this knowledge:
-   - Do NOT reference CONTEXT or cite anything.
+You MUST answer using ONLY the provided context from official travel behaviour documents (e.g., Region Skåne mobility reports, Skåne transport plans).
 
-2. If CONTEXT contains relevant, explicit information that directly answers the QUESTION, use ONLY the CONTEXT and cite it.
+You may restate explicit factual elements such as document titles, headings, page numbers, or date ranges if they directly answer the question. Do NOT infer intentions, motivations, add external knowledge, or use tools beyond retrieval.
 
-3. If neither 1 nor 2 applies (question is Skåne transport-specific but CONTEXT is irrelevant), say exactly: "I cannot answer based on the provided documents."
+If no explicit factual information is present in the context, say exactly: "I cannot answer based on the provided documents." [Source: Project_Poposal.pdf, Page: N/A]
 
-## CONTEXT
+CONTEXT:
 {context}
 
-## QUESTION
+QUESTION:
 {question}
 
-## RESPONSE RULES
-- Answer in Swedish unless asked otherwise.
-- Be concise and factual.
-- Cite ONLY CONTEXT facts: [Source: <filename>, Page: <page>]
-- No citations for generic answers from step 1.
+RESPONSE RULES:
+- Answer in English unless the user asks otherwise.
+- Be concise and factual, targeting paraphrased questions from factual claims in travel behaviour documents.
+- Every factual sentence must end with a citation formatted exactly like: [Source: <filename>, Page: <page>]
+- Do NOT cite sources that are not explicitly in the context.
 """.strip()
 
     # ==================================================
@@ -167,7 +163,7 @@ You are an academic assistant specialized in mobility and transport in Skåne.
         # LLM-based answer (streaming, safe)
         # ----------------------------------------------
         prompt = self._build_prompt(question, context)
-        #print("prompt: " + prompt)
+        print("prompt: " + prompt)
         answer_text = ""
 
         try:
@@ -193,9 +189,9 @@ You are an academic assistant specialized in mobility and transport in Skåne.
                 "sources": sources,
             }
 
-        #print("answer_text: " + answer_text)
+        print("answer_text: " + answer_text)
         final_answer = answer_text.strip()
-        #print("final_answer: " + final_answer)
+        print("final_answer: " + final_answer)
 
         if not final_answer:
             final_answer = "I cannot answer based on the provided documents 21."

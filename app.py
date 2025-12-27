@@ -56,10 +56,10 @@ if "messages" not in st.session_state:
 # -----------------------------
 # Sidebar
 # -----------------------------
-st.sidebar.title("Skåne Mobility Assistant")
+st.sidebar.title("Travel Behaviour Analysis Assistant")
 st.sidebar.markdown(
     """
-This assistant answers questions about **mobility and transport in Skåne**
+This assistant answers questions about **mobility and transport**
 using **only official regional documents**.
 
 All answers are grounded in the document database and include citations.
