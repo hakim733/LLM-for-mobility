@@ -164,7 +164,7 @@ RESPONSE RULES:
         # LLM-based answer (streaming, safe)
         # ----------------------------------------------
         prompt = self._build_prompt(question, context)
-        print("prompt: " + prompt)
+        #print("prompt: " + prompt)
         answer_text = ""
 
         try:
@@ -183,16 +183,16 @@ RESPONSE RULES:
             # full traceback (very useful while debugging)
             print(traceback.format_exc())
             return {
-                "answer": "I cannot answer based on the provided documents 42.",
+                "answer": "I cannot answer based on the provided documents.",
                 "sources": sources,
             }
 
-        print("answer_text: " + answer_text)
+        #print("answer_text: " + answer_text)
         final_answer = answer_text.strip()
-        print("final_answer: " + final_answer)
+        #print("final_answer: " + final_answer)
 
         if not final_answer:
-            final_answer = "I cannot answer based on the provided documents 21."
+            final_answer = "I cannot answer based on the provided documents."
 
         return {
             "answer": final_answer,
