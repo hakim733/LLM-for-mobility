@@ -33,6 +33,7 @@ EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
 # LLM (Ollama)
 # -----------------------------
 LLM_MODEL_NAME = "llama3"
+#LLM_MODEL_NAME = "gemma3:270m"
 
 # -----------------------------
 # Retrieval

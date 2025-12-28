@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from typing import Dict, Any, List, Tuple
 import re
-
+import traceback
 import ollama
 
 
@@ -55,15 +55,13 @@ class RAGPipeline:
     # ==================================================
     def _build_prompt(self, question: str, context: str) -> str:
         return f"""
-You are an academic assistant specialized in mobility and transport in Skåne.
-You MUST answer using ONLY the provided context from official documents.
+You are an academic assistant specialized in mobility and transport.
 
-You may restate explicit factual elements such as document titles,
-headings, or date ranges if they directly answer the question.
-Do NOT infer intentions, motivations, or add external knowledge.
+Please answer using ONLY the provided context from official travel behaviour documents.
 
-If no explicit factual information is present, say exactly:
-"I cannot answer based on the provided documents."
+Please state explicit factual elements such as document titles, headings, page numbers, 
+or date ranges if they directly answer the question. 
+Do NOT infer intentions, motivations, add external knowledge, or use tools beyond retrieval.
 
 CONTEXT:
 {context}
@@ -73,11 +71,9 @@ QUESTION:
 
 RESPONSE RULES:
 - Answer in Swedish unless the user asks otherwise.
-- Be concise and factual.
-- Every factual sentence must end with a citation formatted exactly like:
-  [Source: <filename>, Page: <page>]
-- Do NOT cite sources that are not in the context.
-- Do NOT guess or add external knowledge.
+- Be concise and factual, targeting paraphrased questions from factual claims in travel behaviour documents.
+- Every factual sentence must end with a citation formatted exactly like: [Source: <filename>, Page: <page>]
+- Do NOT cite sources that are not explicitly in the context.
 """.strip()
 
     # ==================================================
@@ -112,7 +108,7 @@ RESPONSE RULES:
     # ==================================================
     # Main entry point
     # ==================================================
-    def answer(self, question: str) -> Dict[str, Any]:
+    def answer(self, question: str, temperature: float = 0.1) -> Dict[str, Any]:
         # ----------------------------------------------
         # System-level questions (NO LLM)
         # ----------------------------------------------
@@ -168,28 +164,32 @@ RESPONSE RULES:
         # LLM-based answer (streaming, safe)
         # ----------------------------------------------
         prompt = self._build_prompt(question, context)
+        #print("prompt: " + prompt)
         answer_text = ""
 
         try:
             for chunk in ollama.generate(
                 model=self.llm_model,
                 prompt=prompt,
-                options={
-                    "temperature": 0.1,
-                    "num_ctx": 4096,
-                },
+                options={"temperature": temperature, "num_ctx": 4096},
                 stream=True,
             ):
                 if "response" in chunk:
                     answer_text += chunk["response"]
 
-        except Exception:
+        except Exception as e:
+            print(e)  # or logging.error(e)
+
+            # full traceback (very useful while debugging)
+            print(traceback.format_exc())
             return {
                 "answer": "I cannot answer based on the provided documents.",
                 "sources": sources,
             }
 
+        #print("answer_text: " + answer_text)
         final_answer = answer_text.strip()
+        #print("final_answer: " + final_answer)
 
         if not final_answer:
             final_answer = "I cannot answer based on the provided documents."
