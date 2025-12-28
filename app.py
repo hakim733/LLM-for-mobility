@@ -3,7 +3,7 @@ import streamlit as st
 from src.data_processor import generate_chunks_from_pdfs
 from src.vector_store import VectorStore
 from src.rag_pipeline import RAGPipeline
-from src.config import LLM_MODEL_NAME
+from src.config import LLM_MODEL_NAME, EMBEDDING_MODEL_NAME
 
 # -----------------------------
 # Helpers
@@ -56,7 +56,7 @@ if "messages" not in st.session_state:
 # -----------------------------
 # Sidebar
 # -----------------------------
-st.sidebar.title("Travel Behaviour Analysis Assistant")
+st.sidebar.title("Skåne Mobility Assistant")
 st.sidebar.markdown(
     """
 This assistant answers questions about **mobility and transport**
@@ -76,8 +76,8 @@ if st.sidebar.button("Rebuild document index"):
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("**Models**")
-st.sidebar.markdown("- Embeddings: all-MiniLM-L6-v2")
-st.sidebar.markdown("- LLM: llama3 (local via Ollama)")
+st.sidebar.markdown("- Embeddings: " + EMBEDDING_MODEL_NAME)
+st.sidebar.markdown("- LLM: " + LLM_MODEL_NAME)
 
 
 # -----------------------------
