@@ -48,7 +48,28 @@ RAG pipeline for answering questions about mobility in Skåne based on PDF repor
 The current code is scaffolded: core flows and interfaces are defined, but PDF extraction, embeddings, and LLM calls are left as clearly-marked `NotImplementedError` placeholders for you to fill in based on your environment and model choices.
 
 
+## RAG Evaluation Scripts
 
+1. **generate_eval_dataset.py**
 
+   **Purpose**: Creates `eval_dataset.json` with paraphrased queries targeting factual claims from transport documents.
 
+   #### Features
+   - Generates 6+ queries (e.g., "Vad är tidsperioden för programmet?")
+   - 3 temperatures × 9+ repeated runs per query
+   - Captures answers + retrieved sources for evaluation
+
+   ### Usage
+      ```bash
+      python generate_eval_dataset.py # → eval_dataset.json (162+ evaluations)
+      ```
+
+2. **evaluate_rag.py**
+
+   **Purpose**: Computes RAG metrics using fuzzy matching and citation validation.
+
+   ### Usage
+      ```bash
+      python evaluate_rag.py
+      ```
 
