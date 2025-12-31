@@ -21,11 +21,11 @@ def generate_dataset():
     rag = RAGPipeline(vs, llm_model=LLM_MODEL_NAME)
     
     queries = [
-        "Vad är kundnöjdhetsmålet för Skånetrafiken år 2025?",
-        "Vad är tidsperioden för programmet?",
-        "Vad är målet för kollektivtrafikens marknadsandel i Skåne år 2030?",
-        "Vilken andel skåningar ska ha minst 10 resmöjligheter till tillväxtmotorer inom 60 minuter?",
-        "Vilken andel skåningar ska ha minst 10 resmöjligheter till regionala kärnor inom 45 minuter?",
+#        "Vad är kundnöjdhetsmålet för Skånetrafiken år 2025?",
+#        "Vad är tidsperioden för programmet?",
+#        "Vad är målet för kollektivtrafikens marknadsandel i Skåne år 2030?",
+#        "Vilken andel skåningar ska ha minst 10 resmöjligheter till tillväxtmotorer inom 60 minuter?",
+#        "Vilken andel skåningar ska ha minst 10 resmöjligheter till regionala kärnor inom 45 minuter?",
         "Hur många reser dagligen med kollektivtrafiken i Skåne?"
     #    "What is the time period of the program?",
     #    "What is the target market share for public transport in Skåne by 2030?",
@@ -35,8 +35,8 @@ def generate_dataset():
     #    "What is the customer satisfaction target for Skånetrafiken by 2025?"
     ]
 
-    temperatures = [0.0, 0.1, 0.5] #, 0.1, 0.5
-    repeats = 10
+    temperatures = [0.0] #, 0.1, 0.5
+    repeats = 1
     results = []
     
     for query in queries:
@@ -49,7 +49,7 @@ def generate_dataset():
             results.append({"query": query, "temp": temp, "answers": answers})
     
     # Save raw dataset
-    file_name = "eval_dataset_" + LLM_MODEL_NAME + ".json"
+    file_name = "data/eval_dataset_" + LLM_MODEL_NAME + ".json"
     with open(file_name, "w") as f:
         json.dump(results, f, indent=2)
     
