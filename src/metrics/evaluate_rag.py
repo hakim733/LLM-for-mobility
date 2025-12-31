@@ -1,12 +1,18 @@
+import sys
+from pathlib import Path
+
+# Add project root to path to allow imports when run as script
+project_root = Path(__file__).parent.parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
 import json
 import re
 import statistics
 from typing import List, Dict, Any
-from rapidfuzz import fuzz, process
+from rapidfuzz import fuzz
 import numpy as np
 from collections import defaultdict
-from src.rag_pipeline import RAGPipeline  # Add temperature param to answer()
-from src.vector_store import VectorStore
 from src.config import LLM_MODEL_NAME
 
 
@@ -92,12 +98,9 @@ def compute_consistency(answers: List[str]) -> float:
     return statistics.mean(similarities)
 
 
-# Main evaluation
-if __name__ == "__main__":
-    vs = VectorStore()
-    rag = RAGPipeline(vs, llm_model=LLM_MODEL_NAME)
-    
-    dataset = load_dataset("eval_dataset.json")
+def run_evaluation(json_path: str = "data/eval_dataset_" + LLM_MODEL_NAME + ".json") -> Dict[str, Any]:
+    """Run full RAG evaluation and return formatted results for Streamlit."""
+    dataset = load_dataset(json_path)
     
     ground_truths = {
         "Vad är kundnöjdhetsmålet för Skånetrafiken år 2025?": [
@@ -120,9 +123,8 @@ if __name__ == "__main__":
         ],
         # Add more queries as needed
     }
-    
+   
     metrics = defaultdict(list)
-    
     for result in dataset:
         query, temp = result["query"], result["temp"]
         answers = [r["answer"] for r in result["answers"]]
@@ -134,17 +136,32 @@ if __name__ == "__main__":
         
         metrics[f"temp_{temp}"].append({"correctness": corr, "citation": cit_acc, "consistency": cons})
     
-    # Summary table - PERFECTLY ALIGNED
-    print("| Temperature | Correctness | Citation Acc | Consistency |")
-    print("|-------------|-------------|--------------|-------------|")
+    # Format results for Streamlit
+    summary_table = []
     for temp_str, scores in metrics.items():
         corr_mean = np.mean([s['correctness'] for s in scores])
         cit_mean = np.mean([s['citation'] for s in scores])
         cons_mean = np.mean([s['consistency'] for s in scores])
-        
-        print(f"| {temp_str:<11} | {corr_mean:>9.1%} | {cit_mean:>10.1%} | {cons_mean:>11.3f} |")
+        summary_table.append({
+            "Temperature": temp_str, 
+            "Correctness": f"{corr_mean:.1%}", 
+            "Citation Acc": f"{cit_mean:.1%}", 
+            "Consistency": f"{cons_mean:.3f}"
+        })
     
-    # Temperature variance
     consistencies = [np.mean([s['consistency'] for s in scores]) for scores in metrics.values()]
     variance = np.std(consistencies)
-    print(f"\nTemperature Variance (Consistency Std Dev): {variance:.3f}")
+    
+    return {
+        "summary_table": summary_table,
+        "variance": variance,
+        "message": f"Temperature Variance (Consistency Std Dev): {variance:.3f}"
+    }
+
+if __name__ == "__main__":
+    results = run_evaluation()
+    print(LLM_MODEL_NAME + " Evaluation Results")
+    print(results["summary_table"])
+    print(results["message"])
+    
+
