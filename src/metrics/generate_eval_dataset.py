@@ -49,7 +49,7 @@ def generate_dataset():
             results.append({"query": query, "temp": temp, "answers": answers})
     
     # Save raw dataset
-    file_name = "data/eval_dataset_" + LLM_MODEL_NAME + ".json"
+    file_name = "eval_dataset_" + LLM_MODEL_NAME + ".json"
     with open(file_name, "w") as f:
         json.dump(results, f, indent=2)
     

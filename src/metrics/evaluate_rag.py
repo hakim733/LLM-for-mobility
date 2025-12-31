@@ -98,7 +98,7 @@ def compute_consistency(answers: List[str]) -> float:
     return statistics.mean(similarities)
 
 
-def run_evaluation(json_path: str = "data/eval_dataset_" + LLM_MODEL_NAME + ".json") -> Dict[str, Any]:
+def run_evaluation(json_path: str = "eval_dataset_" + LLM_MODEL_NAME + ".json") -> Dict[str, Any]:
     """Run full RAG evaluation and return formatted results for Streamlit."""
     dataset = load_dataset(json_path)
     
