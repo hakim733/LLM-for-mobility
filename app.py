@@ -4,6 +4,8 @@ from src.data_processor import generate_chunks_from_pdfs
 from src.vector_store import VectorStore
 from src.rag_pipeline import RAGPipeline
 from src.config import LLM_MODEL_NAME, EMBEDDING_MODEL_NAME
+from src.metrics.generate_eval_dataset import generate_dataset
+from src.metrics.evaluate_rag import run_evaluation
 
 # -----------------------------
 # Helpers
@@ -31,7 +33,7 @@ def chunks_to_dicts(chunks):
 # Page configuration
 # -----------------------------
 st.set_page_config(
-    page_title="Skåne Mobility RAG Assistant",
+    page_title=" Mobility RAG Assistant",
     layout="wide",
 )
 
@@ -56,11 +58,11 @@ if "messages" not in st.session_state:
 # -----------------------------
 # Sidebar
 # -----------------------------
-st.sidebar.title("Skåne Mobility Assistant")
+st.sidebar.title(" Mobility Assistant")
 st.sidebar.markdown(
     """
 This assistant answers questions about **mobility and transport**
-using **only official regional documents**.
+using **only official documents**.
 
 All answers are grounded in the document database and include citations.
 """
@@ -74,6 +76,20 @@ if st.sidebar.button("Rebuild document index"):
 
     st.sidebar.success(f"Indexed {len(chunks)} document chunks.")
 
+if st.sidebar.button("Generate Dataset"):
+    with st.spinner("Generating evaluation dataset with questions, answers and citations"):
+        generate_dataset()  # Or direct call to script logic
+        
+    st.sidebar.success("eval_dataset.json generated successfully!")
+
+if st.sidebar.button("Run Evaluation"):
+    with st.spinner("Running RAG evaluation (correctness, citations, consistency)..."):
+        results = run_evaluation()  # Returns dict with table + variance
+        st.subheader("Evaluation Results")
+        st.table(results["summary_table"])
+        st.info(results["message"])
+    st.sidebar.success("Evaluation complete!")
+
 st.sidebar.markdown("---")
 st.sidebar.markdown("**Models**")
 st.sidebar.markdown("- Embeddings: " + EMBEDDING_MODEL_NAME)
@@ -83,11 +99,11 @@ st.sidebar.markdown("- LLM: " + LLM_MODEL_NAME)
 # -----------------------------
 # Main UI
 # -----------------------------
-st.title("🚍 Skåne Mobility Knowledge Assistant")
+st.title(" Mobility Knowledge Assistant")
 
 st.markdown(
     """
-Ask a question about **transport, mobility, or infrastructure in Skåne**.
+Ask a question about **transport, mobility, or infrastructure**.
 The assistant will answer **only if the information is present in the documents**.
 """
 )
@@ -104,7 +120,7 @@ for msg in st.session_state.messages:
 
 
 # Chat input
-user_input = st.chat_input("Ask a question about mobility in Skåne...")
+user_input = st.chat_input("Ask a question about mobility in ...")
 
 if user_input:
     st.session_state.messages.append(

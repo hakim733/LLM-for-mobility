@@ -61,7 +61,7 @@ The current code is scaffolded: core flows and interfaces are defined, but PDF e
 
    ### Usage
       ```bash
-      python generate_eval_dataset.py # → eval_dataset.json (162+ evaluations)
+      python src/metrics/generate_eval_dataset.py # → eval_dataset.json (162+ evaluations)
       ```
 
 2. **evaluate_rag.py**
@@ -70,6 +70,6 @@ The current code is scaffolded: core flows and interfaces are defined, but PDF e
 
    ### Usage
       ```bash
-      python evaluate_rag.py
+      python src/metrics/evaluate_rag.py
       ```
 
