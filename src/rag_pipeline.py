@@ -108,7 +108,7 @@ RESPONSE RULES:
     # ==================================================
     # Main entry point
     # ==================================================
-    def answer(self, question: str, temperature: float = 0.1) -> Dict[str, Any]:
+    def answer(self, question: str, temperature: float = 0.0) -> Dict[str, Any]:
         # ----------------------------------------------
         # System-level questions (NO LLM)
         # ----------------------------------------------

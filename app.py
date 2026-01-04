@@ -1,4 +1,7 @@
 import streamlit as st
+import pandas as pd
+import altair as alt
+import os
 
 from src.data_processor import generate_chunks_from_pdfs
 from src.vector_store import VectorStore
@@ -83,12 +86,105 @@ if st.sidebar.button("Generate Dataset"):
     st.sidebar.success("eval_dataset.json generated successfully!")
 
 if st.sidebar.button("Run Evaluation"):
-    with st.spinner("Running RAG evaluation (correctness, citations, consistency)..."):
-        results = run_evaluation()  # Returns dict with table + variance
-        st.subheader("Evaluation Results")
-        st.table(results["summary_table"])
-        st.info(results["message"])
-    st.sidebar.success("Evaluation complete!")
+    with st.spinner("Running full RAG evaluation (correctness, citations, consistency, variance)..."):
+        results = run_evaluation()
+        
+        st.subheader(" RAG Evaluation Results")
+        
+        # Per-temperature summary (variance across temps)
+        st.markdown("### Per-Temperature Metrics")
+        if results["temp_summary"]:
+            temp_df = pd.DataFrame(results["temp_summary"])
+            if 'Temperature' in temp_df.columns:
+                st.table(temp_df.set_index('Temperature'))
+            else:
+                st.table(temp_df)
+        else:
+            st.warning("No temp summary data!")
+        
+        csv_path = results.get("csv_path", "")
+        df = pd.read_csv(csv_path)
+
+        # Row 2: CONSOLIDATED (mean across bases) + extras
+        col3, col4 = st.columns(2)
+        with col3:
+            # Consolidated Correctness (mean per temp)
+            df_mean = df.groupby('temp')[['correctness', 'consistency']].mean().reset_index()
+            corr_consol = alt.Chart(df_mean).mark_line(point=True, strokeWidth=3).encode(
+                x=alt.X('temp:Q', title="Temperature"),
+                y=alt.Y('correctness:Q', title="Mean Correctness", scale=alt.Scale(domain=[0,1])),
+                tooltip=['temp', 'correctness']
+            ).properties(
+                title="Correctness vs Temp",
+                width=400,
+                height=250
+            )
+            st.altair_chart(corr_consol, use_container_width=True)
+        
+        with col4:
+            # Consolidated Consistency (mean per temp)
+            cons_consol = alt.Chart(df_mean).mark_line(point=True, strokeWidth=3, color="orange").encode(
+                x=alt.X('temp:Q', title="Temperature"),
+                y=alt.Y('consistency:Q', title="Mean Consistency", scale=alt.Scale(domain=[0,1])),
+                tooltip=['temp', 'consistency']
+            ).properties(
+                title="Consistency vs Temp",
+                width=400,
+                height=250
+            )
+            st.altair_chart(cons_consol, use_container_width=True)
+
+        # Full variance across temperatures
+        st.markdown("### Variance Across Temperatures")
+        vars = results['variances']
+        col1, col2, col3 = st.columns(3)
+        with col1: st.metric("Correctness Var", f"{vars['correctness_var']:.3f}")
+        with col2: st.metric("Citation Var", f"{vars['citation_var']:.3f}")
+        with col3: st.metric("Consistency Var", f"{vars['consistency_var']:.3f}")
+        #st.info(results["message"])
+        
+        # CSV download (safe)
+        if csv_path and os.path.exists(csv_path):
+            with open(csv_path, "r") as f:
+                csv_data = f.read()
+            st.download_button(
+                label="📥 Download Full Metrics CSV",
+                data=csv_data,
+                file_name="rag_eval_metrics.csv",
+                mime="text/csv"
+            )
+        else:
+            st.warning("CSV not generated - check eval logs.")
+        
+        # Quick charts (with fallback)
+        try:
+            # Per-base query summary (paraphrase robustness)
+            st.markdown("### Per-Base Query Metrics")
+            if results["base_summary"]:
+                base_df = pd.DataFrame(results["base_summary"])
+                if 'Base Query' in base_df.columns:
+                    st.table(base_df.set_index('Base Query'))
+                else:
+                    st.table(base_df)  # Fallback
+            else:
+                st.warning("No base summary data - run dataset generation first!")
+        
+            col1, col2 = st.columns(2)
+            with col1:
+                corr_chart = alt.Chart(df).mark_line().encode(
+                    x="temp:Q", y="correctness:Q", color="base_query:N"
+                ).properties(title="Correctness vs Temperature")
+                st.altair_chart(corr_chart, use_container_width=True)
+            with col2:
+                cons_chart = alt.Chart(df).mark_line().encode(
+                    x="temp:Q", y="consistency:Q", color="base_query:N"
+                ).properties(title="Consistency vs Temperature")
+                st.altair_chart(cons_chart, use_container_width=True)
+        except:
+            st.info("Charts unavailable - download CSV for analysis.")
+    
+    st.sidebar.success("Full evaluation complete!")
+    st.balloons()
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("**Models**")
